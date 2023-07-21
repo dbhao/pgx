@@ -10,7 +10,8 @@ import (
 	"github.com/jackc/pgx/v5/internal/pgio"
 )
 
-const ProtocolVersionNumber = 196608 // 3.0
+const ProtocolVersionNumber = 196608       // 3.0
+const GPProtocolVersionNumber = 1879244800 // GP hack https://github.com/greenplum-db/gpdb/pull/7697
 
 type StartupMessage struct {
 	ProtocolVersion uint32
@@ -30,8 +31,8 @@ func (dst *StartupMessage) Decode(src []byte) error {
 	dst.ProtocolVersion = binary.BigEndian.Uint32(src)
 	rp := 4
 
-	if dst.ProtocolVersion != ProtocolVersionNumber {
-		return fmt.Errorf("Bad startup message version number. Expected %d, got %d", ProtocolVersionNumber, dst.ProtocolVersion)
+	if dst.ProtocolVersion != ProtocolVersionNumber && dst.ProtocolVersion != GPProtocolVersionNumber {
+		return fmt.Errorf("Bad startup message version number. Expected %d or %d, got %d", ProtocolVersionNumber, GPProtocolVersionNumber, dst.ProtocolVersion)
 	}
 
 	dst.Parameters = make(map[string]string)
